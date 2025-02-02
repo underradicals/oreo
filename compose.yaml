@@ -1,31 +1,43 @@
 ﻿services:
-  redis-stack:
-    image: redis/redis-stack:latest
-    container_name: redis-stack
-    ports:
-      - "6379:6379"   # Redis port
-      - "8001:8001"   # RedisInsight GUI port
+  postgres:
+    image: postgres:latest
+    container_name: postgres_container
+    restart: always
     environment:
-      REDIS_PASSWORD_FILE: /run/secrets/redis_password # Set a password for Redis
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: world_content
+    ports:
+      - "5432:5432"
     volumes:
-      - redis-data:/data # Persist Redis data
-    secrets:
-      - redis_password    
-    restart: unless-stopped
-#    deploy:
-#      resources:
-#        limits:
-#          memory: 1g
-#          cpus: "0.5"
-#    networks:
-#      - redis-network
+      - postgres_data:/var/lib/postgresql/data
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq_container
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    ports:
+      - "5672:5672"  # RabbitMQ messaging port
+      - "15672:15672" # RabbitMQ management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+  redis:
+    image: redis/redis-stack:latest
+    container_name: redis_stack
+    restart: always
+    ports:
+      - "6379:6379"  # Redis default port
+      - "8001:8001"  # Redis Stack UI port
+    volumes:
+      - redis_data:/data
+
 
 volumes:
-  redis-data:
-
-secrets:
-  redis_password:
-    file: ./redis_password.txt
+  redis_data:
+  postgres_data:
+  rabbitmq_data:
 
 #networks:
 #  redis-network:
